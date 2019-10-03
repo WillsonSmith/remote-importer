@@ -25,14 +25,18 @@ async function getUrlsForFile(file) {
 
 function getUrlFileName(url) {
   const parsedUrl = new URL(url);
-  return parsedUrl.pathname.substring(1).replace(new RegExp('/', 'g'), '_');
+  return [url, parsedUrl.pathname.substring(1).replace(new RegExp('/', 'g'), '_')];
 }
 
 async function downloadFiles(urls) {
   const files = await Promise.all(
     urls.map(url => fetch(url))
   ).then((downloads) => {
-    return Promise.all(downloads.map(async (download) => [getUrlFileName(download.url), await download.text()]));
+    return Promise.all(
+      downloads.map(
+        async (download) => [getUrlFileName(download.url), await download.text()]
+      )
+    );
   });
   return files;
 }
@@ -40,7 +44,11 @@ async function downloadFiles(urls) {
 getUrlsForFile(source).then(async (urls) => {
   const files = await downloadFiles(urls);
   files.forEach((file) => {
-    writeFile(`src/${file[0]}`, file[1]);
+    writeFile(`src/${file[0][1]}`, file[1]);
   });
+
+  // files.forEach((file) => {
+  //   const urlToReplace = 
+  // });
 });
 
