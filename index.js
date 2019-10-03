@@ -47,8 +47,12 @@ getUrlsForFile(source).then(async (urls) => {
     writeFile(`src/${file[0][1]}`, file[1]);
   });
 
-  // files.forEach((file) => {
-  //   const urlToReplace = 
-  // });
+  let doc = await (readFile(source, 'utf8'));
+
+  files.forEach((file) => {
+    const urlToReplace = file[0][0];
+    doc = doc.replace(urlToReplace, `./${file[0][1]}`);
+  });
+  writeFile(`src/build.js`, doc);
 });
 
