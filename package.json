@@ -1,0 +1,8 @@
+{
+  "name": "remote-importer",
+  "version": "1.0.0",
+  "description": "download url imports in javascript and replace the import with local",
+  "main": "index.js",
+  "author": "Willson Smith (me@willsonsmith.com)",
+  "license": "MIT"
+}
