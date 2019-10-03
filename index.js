@@ -1,14 +1,17 @@
+const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
+const url = require('url');
 const {promisify} = require('util');
 
 const stat = promisify(fs.stat);
 const readFile = promisify(fs.readFile);
+const writeFile = promisify(fs.writeFile);
 
 const [_, ...cliArguments] = process.argv;
 const source = cliArguments[1];
 
-const urlRegex = new RegExp(`https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`, 'g');
+const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
 
 async function isPathOrFile(path) {
   const result = await stat(path);
@@ -17,9 +20,27 @@ async function isPathOrFile(path) {
 
 async function getUrlsForFile(file) {
   const doc = await readFile(file, 'utf8');
-  const urls = urlRegex.exec(doc);
-  console.log(urls);
-  // const urls = 
+  return [...doc.matchAll(urlRegex)].map(url => url[0]);
 }
-getUrlsForFile(source);
-// isPathOrFile(source).then((res) => console.log(res));
+
+function getUrlFileName(url) {
+  const parsedUrl = new URL(url);
+  return parsedUrl.pathname.substring(1).replace(new RegExp('/', 'g'), '_');
+}
+
+async function downloadFiles(urls) {
+  const files = await Promise.all(
+    urls.map(url => fetch(url))
+  ).then((downloads) => {
+    return Promise.all(downloads.map(async (download) => [getUrlFileName(download.url), await download.text()]));
+  });
+  return files;
+}
+
+getUrlsForFile(source).then(async (urls) => {
+  const files = await downloadFiles(urls);
+  files.forEach((file) => {
+    writeFile(`src/${file[0]}`, file[1]);
+  });
+});
+

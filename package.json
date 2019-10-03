@@ -4,5 +4,8 @@
   "description": "download url imports in javascript and replace the import with local",
   "main": "index.js",
   "author": "Willson Smith (me@willsonsmith.com)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.6.0"
+  }
 }
